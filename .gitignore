@@ -1,0 +1,3 @@
+﻿build
+server.ps1
+src/shaders/*.hpp
