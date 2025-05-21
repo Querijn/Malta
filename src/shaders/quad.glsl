@@ -15,6 +15,7 @@ void main()
 	float screenAspect = screenSize.x / screenSize.y;
 	float imageAspect = imageSize.x / imageSize.y;
 
+	// The image needs to cover the whole screen
 	vec2 scale = vec2(1.0);
 	if (screenAspect > imageAspect)
 		scale.y = screenAspect / imageAspect;
@@ -85,7 +86,7 @@ void main()
 {
 	vec2 backUv = uv;
 	vec2 frontUv = uv;
-	vec4 waterMaskColor  = texture(sampler2D(waterMask, smp), uv);
+	vec4 waterMaskColor = texture(sampler2D(waterMask, smp), uv);
 	vec2 imageStep = 1.0 / imageDims;
 
 	// Water wavey effect
@@ -108,24 +109,27 @@ void main()
 		frontUv += sway * imageStep * invLength * 2.0 * t;
 	}
 
-	vec4 dayBackColor    = texture(sampler2D(dayBackTex, smp),    backUv);
-	vec4 eveBackColor    = texture(sampler2D(eveBackTex, smp),    backUv);
-	vec4 nightBackColor  = texture(sampler2D(nightBackTex, smp),  backUv);
-	vec4 dayFrontColor   = texture(sampler2D(dayFrontTex, smp),   frontUv);
-	vec4 eveFrontColor   = texture(sampler2D(eveFrontTex, smp),   frontUv);
-	vec4 nightFrontColor = texture(sampler2D(nightFrontTex, smp), frontUv);
-
 	// Day/Night cycle
 	vec4 backColor;
 	vec4 frontColor;
 	if (dayCycleTime < 1.0 / 3.0)
 	{
+		vec4 dayBackColor  = texture(sampler2D(dayBackTex, smp),  backUv);
+		vec4 eveBackColor  = texture(sampler2D(eveBackTex, smp),  backUv);
+		vec4 dayFrontColor = texture(sampler2D(dayFrontTex, smp), frontUv);
+		vec4 eveFrontColor = texture(sampler2D(eveFrontTex, smp), frontUv);
+
 		float t = dayCycleTime * 3.0;
 		backColor = mix(dayBackColor, eveBackColor, t);
 		frontColor = mix(dayFrontColor, eveFrontColor, t);
 	}
 	else if (dayCycleTime < 2.0 / 3.0)
 	{
+		vec4 nightBackColor  = texture(sampler2D(nightBackTex, smp),  backUv);
+		vec4 eveBackColor    = texture(sampler2D(eveBackTex, smp),    backUv);
+		vec4 nightFrontColor = texture(sampler2D(nightFrontTex, smp), frontUv);
+		vec4 eveFrontColor   = texture(sampler2D(eveFrontTex, smp),   frontUv);
+
 		float t = dayCycleTime * 3.0 - 1.0;
 
 		backColor = mix(eveBackColor, nightBackColor, t);
@@ -135,18 +139,17 @@ void main()
 	}
 	else
 	{
+		vec4 nightBackColor  = texture(sampler2D(nightBackTex, smp),  backUv);
+		vec4 dayBackColor    = texture(sampler2D(dayBackTex, smp),    backUv);
+		vec4 nightFrontColor = texture(sampler2D(nightFrontTex, smp), frontUv);
+		vec4 dayFrontColor   = texture(sampler2D(dayFrontTex, smp),   frontUv);
+
 		float t = dayCycleTime * 3.0 - 2.0;
 
 		backColor = mix(nightBackColor, dayBackColor, t);
 		backColor = calculateStarColor(backColor, backUv);
 
 		frontColor = mix(nightFrontColor, dayFrontColor, t);
-
-	}
-
-	if (waterMaskColor.r > 0.99)
-	{
-		backColor += 0.1 * backColor * sin(waterTime * M_PI * 10.0);
 	}
 
 	// Edge fade

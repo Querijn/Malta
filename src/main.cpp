@@ -119,12 +119,6 @@ float fract01(float x)
 	return x - floor(x);
 }
 
-#if __EMSCRIPTEN__
-EM_JS(float, getWindSpeed, (), {
-	return Module.windSpeed;
-});
-#endif
-
 void frame(void)
 {
 	sg_begin_pass({ .action = state.passAction, .swapchain = sglue_swapchain() });
@@ -143,7 +137,13 @@ void frame(void)
 	vertParams._imageSize[0] = 480.0f;
 	vertParams._imageSize[1] = 300.0f;
 
-	state.dayCycleTime = fract01(state.dayCycleTime + (float)sapp_frame_duration() / 100.0f);
+#if __EMSCRIPTEN__
+	float dayDuration = (float)EM_ASM_DOUBLE({ return Module.dayDuration * 60.0; });
+#else
+	float dayDuration = 100.0f;
+#endif
+
+	state.dayCycleTime = fract01(state.dayCycleTime + (float)sapp_frame_duration() / dayDuration);
 	state.waterTime	   = fract01(state.waterTime + (float)sapp_frame_duration() / 10.0f);
 
 	FragParams_t fragParams = {};
@@ -151,7 +151,7 @@ void frame(void)
 	fragParams.waterTime	= state.waterTime;
 
 #if __EMSCRIPTEN__
-	fragParams.windFrequency = getWindSpeed();
+	fragParams.windFrequency = (float)EM_ASM_DOUBLE({ return Module.windSpeed; });
 	fragParams.edge			 = (float)EM_ASM_DOUBLE({ return Module.edgePerc / 100.0; });
 #else
 	fragParams.windFrequency = 5.0f;
@@ -170,10 +170,17 @@ void event(const sapp_event* e)
 {
 	(void)e;
 
-	if (e->type == SAPP_EVENTTYPE_KEY_DOWN)
+	switch(e->type)
 	{
+	case SAPP_EVENTTYPE_KEY_DOWN:
+#if !__EMSCRIPTEN__
 		if (e->key_code == SAPP_KEYCODE_ESCAPE)
 			sapp_quit();
+#endif
+		break;
+
+	default: // -Wswitch
+		break;
 	}
 }
 
