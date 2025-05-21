@@ -130,9 +130,11 @@ void frame(void)
 	sg_begin_pass({ .action = state.passAction, .swapchain = sglue_swapchain() });
 	sg_apply_pipeline(state.pip);
 
+#if _WIN32
 	char title[64];
 	snprintf(title, 64, "Malta %1.2f", state.dayCycleTime);
 	sapp_set_window_title(title);
+#endif
 
 	VertParams_t vertParams;
 	vertParams.screenSize[0] = sapp_widthf();
