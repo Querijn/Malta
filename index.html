@@ -1,0 +1,149 @@
+﻿<!doctype html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Malta</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1, maximum-scale=1, user-scalable=0" />
+    <style type="text/css">
+        @font-face {
+            font-family: 'Alagard';
+            src: url('asset_sources/alagard.ttf') format('truetype');
+        }
+
+        body {
+            background-color: black;
+
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #canvas {
+            position: absolute;
+            border: 0;
+            overflow: hidden;
+            display: block;
+            image-rendering: optimizeSpeed;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -o-crisp-edges;
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: optimize-contrast;
+            image-rendering: crisp-edges;
+            image-rendering: pixelated;
+            -ms-interpolation-mode: nearest-neighbor;
+            display: block;
+        }
+
+        #logo-container {
+            position: fixed;
+            right: 0;
+            text-align: right;
+        }
+
+        #logo {
+            width: 20vh;
+            height: auto;
+            image-rendering: pixelated;
+            display: block;
+        }
+
+        #credit {
+            font-family: 'Alagard', sans-serif;
+            font-size: 1.2em;
+            color: #CCC;
+            margin-right: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="canvas" oncontextmenu="event.preventDefault()" width="480" height="300" style="width: 100%; height: 100%;"></canvas>
+    <div id="logo-container" style="bottom: 50px;">
+        <img id="logo" src="asset_sources/logo.png" alt="Logo">
+        <div id="credit">Art: uarfun</div>
+    </div>
+    <script type="text/javascript">
+        // const origError = console.error.bind(console);
+        // console.error = function (message) {
+        //     origError(message);
+        //     document.body.innerHTML += `<div style="color: red; font-size: 20px;">${message}</div>`;
+        // };
+
+        var Module = {
+            dayDuration: 100, // seconds
+            windSpeed: 5,
+            edgePerc: 10,
+
+            preRun: [],
+            postRun: [],
+            print: (function () {
+                return function (text) {
+                    text = Array.prototype.slice.call(arguments).join(' ');
+                    console.log(text);
+                };
+            })(),
+            printErr: function (text) {
+                text = Array.prototype.slice.call(arguments).join(' ');
+                console.error(text);
+            },
+            canvas: (function () {
+                var canvas = document.getElementById('canvas');
+                canvas.addEventListener("webglcontextlost", function (e) { alert('FIXME: WebGL context lost, please reload the page'); e.preventDefault(); }, false);
+                return canvas;
+            })(),
+            setStatus: function (text) { },
+            monitorRunDependencies: function (left) { },
+        };
+        window.onerror = function (event) {
+            console.log("onerror: " + event.message);
+        };
+
+        function applyNumberProperty(name, prop) {
+            if (!prop || typeof prop.value !== 'number') {
+                // console.error(`${name}: Invalid property value: ` + JSON.stringify(prop, null, 4));
+                return;
+            }
+
+            Module[name] = prop.value;
+            console.log(`${name} applied: ${prop.value}`);
+        }
+
+        window.wallpaperPropertyListener = {
+            applyUserProperties: function (properties) {
+                applyNumberProperty("windSpeed", properties.windspeed);
+                applyNumberProperty("dayDuration", properties.dayduration);
+                applyNumberProperty("edgePerc", properties.edgefade);
+
+                if (properties.showlogo) {
+                    const logo = document.getElementById('logo');
+                    logo.style.display = properties.showlogo.value ? 'block' : 'none';
+                }
+
+                if (properties.logooffset) {
+                    const logo = document.getElementById('logo-container');
+                    const offset = properties.logooffset.value.toString() + "px";
+                    logo.style.bottom = offset;
+                }
+
+                if (properties.width) {
+                    const canvas = document.getElementById('canvas');
+                    const width = properties.width.value;
+                    canvas.style.width = width + "%";
+                    window.dispatchEvent(new Event('resize'));
+                }
+
+                if (properties.height) {
+                    const canvas = document.getElementById('canvas');
+                    const height = properties.height.value;
+                    canvas.style.height = height + "%";
+                    window.dispatchEvent(new Event('resize'));
+                }
+            },
+        };
+    </script>
+    <script async type="text/javascript" src="build/web_prod/Malta.js"></script>
+</body>
+</html>

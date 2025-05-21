@@ -39,6 +39,7 @@ layout(binding=1) uniform FragParams
 	float dayCycleTime;
 	float waterTime;
 	float windFrequency;
+	float edge;
 };
 
 layout(binding=0) uniform sampler smp;
@@ -149,7 +150,6 @@ void main()
 	}
 
 	// Edge fade
-	float edge = 0.1;
 	float edgeFade = easeOutQuint(smoothstep(0.0, edge, uv.x)) *
 					 easeOutQuint(smoothstep(1.0, 1.0 - edge, uv.x)) *
 					 easeOutQuint(smoothstep(1.0, 1.0 - edge, uv.y));

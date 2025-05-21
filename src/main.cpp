@@ -150,8 +150,10 @@ void frame(void)
 
 #if __EMSCRIPTEN__
 	fragParams.windFrequency = getWindSpeed();
+	fragParams.edge			 = (float)EM_ASM_DOUBLE({ return Module.edgePerc / 100.0; });
 #else
 	fragParams.windFrequency = 5.0f;
+	fragParams.edge			 = 0.1f;
 #endif
 
 	sg_apply_uniforms(0, SG_RANGE(vertParams));
